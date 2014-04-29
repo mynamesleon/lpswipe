@@ -1,0 +1,78 @@
+
+<!DOCTYPE html>
+<head>
+	<title>lpswipe</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+	<script src="js/jquery.min.js"></script>
+	<script src="js/jquery.lpswipe.js"></script>
+    <script type="text/javascript">
+
+        $(document).ready(function(){
+
+            $('#test1').lpswipe({
+                threshold: 200,
+                swipeDirection: 'horizontal',
+                left: function(){
+                    console.log("left");
+                },
+                right: function(){
+                    console.log("right");
+                },
+                up: function(){
+                    console.log("up");
+                },
+                down: function(){
+                    console.log("down");
+                },
+                moving: function(d){
+                    console.log("x = " + d.posX + "px, y = " + d.posY +"px");
+                    $('#test1').css({'opacity': 1 - (Math.abs(d.posX) / $('#test1').width()) });
+                },
+                notReached: function(){
+                    console.log("not reached");
+                },
+                end: function(d){
+                    console.log("end-x = " + d.posX + "px, end-y = " + d.posY +"px");
+                    $('#test1').stop().animate({'opacity': 1}, 400);
+                }
+            });
+
+            $('#test2').lpswipe({
+                threshold: 100,
+                swipeDirection: 'vertical',
+                left: function(){
+                    console.log("left");
+                },
+                right: function(){
+                    console.log("right");
+                },
+                up: function(){
+                    console.log("up");
+                },
+                down: function(){
+                    console.log("down");
+                },
+                moving: function(d){
+                    console.log("x = " + d.posX + "px, y = " + d.posY +"px");
+                    $('#test2').css({'opacity': 1 - (Math.abs(d.posY) / $('#test2').height()) });
+                },
+                notReached: function(){
+                    console.log("not reached");
+                },
+                end: function(d){
+                    console.log("end-x = " + d.posX + "px, end-y = " + d.posY +"px");
+                    $('#test2').stop().animate({'opacity': 1}, 400);
+                }
+            });
+
+        });
+
+    </script>
+</head>
+
+<body style="margin:0;padding:0;">
+    <div id="test1" style="width:100%;background:magenta;height:300px;">
+    </div>
+    <div id="test2" style="width:100%;background:blue;height:300px;">
+    </div>
+</body>
