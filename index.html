@@ -1,15 +1,15 @@
 
 <!DOCTYPE html>
 <head>
-	<title>lpswipe</title>
+	<title>simple swipe</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
 	<script src="js/jquery.min.js"></script>
-	<script src="js/jquery.lpswipe.js"></script>
+	<script src="js/jquery.simpleSwipe.js"></script>
     <script type="text/javascript">
 
         $(document).ready(function(){
 
-            $('#test1').lpswipe({
+            $('#test1').simpleSwipe({
                 threshold: 200,
                 swipeDirection: 'horizontal',
                 left: function(){
@@ -37,7 +37,7 @@
                 }
             });
 
-            $('#test2').lpswipe({
+            $('#test2').simpleSwipe({
                 threshold: 100,
                 swipeDirection: 'vertical',
                 left: function(){

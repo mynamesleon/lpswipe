@@ -3,7 +3,7 @@
 ~~           Leon Slater, www.lpslater.co.uk           ~~
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 (function ($) {
-    $.fn.lpswipe = function (options) {
+    $.fn.simpleSwipe = function (options) {
 
         var defaults = {
             threshold: 20, // the distance the swipe needs to be to fire the function
@@ -36,15 +36,15 @@
                 movementY = 0,
                 scrolling = true,
                 touchEnabled = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0,
-                pointerEnabled = window.navigator.pointerEnabled,
-                msPointerEnabled = window.navigator.msPointerEnabled,
+                pointerEnabled = window.navigator.pointerEnabled, // detect pointer - returns true on IE11, but not IE10
+                msPointerEnabled = window.navigator.msPointerEnabled, // returns true for pointer on IE10 and IE11
                 msTouchDevice = touchEnabled ? pointerEnabled || msPointerEnabled : false, // pointer detection does not equate to touch support - hence the touchenabled variable
                 userBrowser = msTouchDevice ? pointerEnabled ? 'IEedge' : 'IE10' : 'webkit', // browser detection to determine necessary eventlisteners
                 cancelTouch = eventListeners.cancel[userBrowser],
                 startTouch = eventListeners.start[userBrowser],
                 moveTouch = eventListeners.move[userBrowser],
                 endTouch = eventListeners.end[userBrowser],
-                startPointerId = -1,
+                startPointerId = -1, // set to -1 as the indentifier numbers on webkit start at 0
                 direction = null,
                 d = { $el: $el };
 
@@ -65,8 +65,35 @@
                 }
             }
 
+            function toProceed(event, touchType){ // the conditionals that determine whether the touch event should be ignored or not
+                var toProceed;
+                switch(touchType){
+                    case 'start':
+                        toProceed = startPointerId === -1;
+                    break;
+                    case 'move':
+                        if (msTouchDevice){
+                            toProceed = startPointerId === event.originalEvent.pointerId;    
+                        } else { // targetTouches checks touches on the element - allows for user to have swipe interactions on more than one element at a time
+                            toProceed = startPointerId === event.originalEvent.targetTouches[0].identifier;
+                        }
+                    break;
+                    case 'end':
+                        if (msTouchDevice){
+                            toProceed = startPointerId === event.originalEvent.pointerId;   
+                        } else { // need to check the changedTouches object here, as targetTouches will return empty if only one touch was present
+                            toProceed = startPointerId === event.originalEvent.changedTouches[0].identifier;   
+                        }
+                    break;
+                }
+                if (msTouchDevice && toProceed){ // if on an msTouch device, make sure the event type is touch, and not a pen or mouse input
+                    toProceed = event.originalEvent.pointerType === 'touch' || event.originalEvent.pointerType === 2; // returns '2' for touch on IE10
+                }
+                return toProceed;
+            }
+
             function slideStart(event) {
-                if (msTouchDevice ? startPointerId === -1 && (event.originalEvent.pointerType === 'touch' || event.originalEvent.pointerType === 2) : !event.originalEvent.targetTouches[1]) { // pointerType is 'touch' in IE11, 2 in IE10 for touch
+                if (toProceed(event, 'start')) {
                     var touchEvent = msTouchDevice ? event.originalEvent : event.originalEvent.targetTouches[0]; // using target touches for webkit
                     startX = touchEvent.clientX;
                     startY = touchEvent.clientY;
@@ -89,7 +116,7 @@
             }
 
             function slideMove(event) {
-                if (msTouchDevice ? startPointerId === event.originalEvent.pointerId && (event.originalEvent.pointerType === 'touch' || event.originalEvent.pointerType === 2) : startPointerId === event.originalEvent.targetTouches[0].identifier) {
+                if (toProceed(event, 'move')) {
                     var touchEvent = msTouchDevice ? event.originalEvent : event.originalEvent.targetTouches[0];
                     movementX = touchEvent.clientX - startX;
                     movementY = touchEvent.clientY - startY;
@@ -112,7 +139,7 @@
             }
 
             function slideEnd(event) {
-                if (msTouchDevice ? startPointerId === event.originalEvent.pointerId && (event.originalEvent.pointerType === 'touch' || event.originalEvent.pointerType === 2) : !event.originalEvent.targetTouches.length) {
+                if (toProceed(event, 'end')) {
                     if (!scrolling) {
                         if (options.swipeDirection === 'horizontal') {
                             direction = movementX > options.threshold ? 'right' : movementX < -options.threshold ? 'left' : 'notReached';
