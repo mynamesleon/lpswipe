@@ -3,7 +3,25 @@
 ~~           Leon Slater, www.lpslater.co.uk           ~~
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 (function ($) {
-    $.fn.simpleSwipe = function (options) {
+
+    var eventListeners = { // define the event listeners to use for each browser
+        start: { 'IEedge': 'pointerdown', 'IE10': 'MSPointerDown', 'webkit': 'touchstart' },
+        move: { 'IEedge': 'pointermove', 'IE10': 'MSPointerMove', 'webkit': 'touchmove' },
+        end: { 'IEedge': 'pointerup', 'IE10': 'MSPointerUp', 'webkit': 'touchend' },
+        cancel: { 'IEedge': 'pointercancel', 'IE10': 'MSPointerCancel', 'webkit': 'touchcancel' }
+    };
+
+    var touchEnabled = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0,
+        pointerEnabled = window.navigator.pointerEnabled, // detect pointer - returns true on IE11, but not IE10
+        msPointerEnabled = window.navigator.msPointerEnabled, // returns true for pointer on IE10 and IE11
+        msTouchDevice = touchEnabled ? pointerEnabled || msPointerEnabled : false, // pointer detection does not equate to touch support - hence the touchenabled variable
+        userBrowser = msTouchDevice ? pointerEnabled ? 'IEedge' : 'IE10' : 'webkit', // browser detection to determine necessary eventlisteners
+        cancelTouch = eventListeners.cancel[userBrowser],
+        startTouch = eventListeners.start[userBrowser],
+        moveTouch = eventListeners.move[userBrowser],
+        endTouch = eventListeners.end[userBrowser];
+
+    $.fn.lpswipe = function (options) {
 
         var defaults = {
             threshold: 20, // the distance the swipe needs to be to fire the function
@@ -20,14 +38,7 @@
 
         options = $.extend({}, defaults, options);
 
-        return this.each(function(){ 
-
-            var eventListeners = { // define the event listeners to use for each browser
-                start: { 'IEedge': 'pointerdown', 'IE10': 'MSPointerDown', 'webkit': 'touchstart' },
-                move: { 'IEedge': 'pointermove', 'IE10': 'MSPointerMove', 'webkit': 'touchmove' },
-                end: { 'IEedge': 'pointerup', 'IE10': 'MSPointerUp', 'webkit': 'touchend' },
-                cancel: { 'IEedge': 'pointercancel', 'IE10': 'MSPointerCancel', 'webkit': 'touchcancel' }
-            };
+        return this.each(function(){
 
             var $el = $(this),
                 startX = 0,
@@ -35,15 +46,6 @@
                 startY = 0,
                 movementY = 0,
                 scrolling = true,
-                touchEnabled = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0,
-                pointerEnabled = window.navigator.pointerEnabled, // detect pointer - returns true on IE11, but not IE10
-                msPointerEnabled = window.navigator.msPointerEnabled, // returns true for pointer on IE10 and IE11
-                msTouchDevice = touchEnabled ? pointerEnabled || msPointerEnabled : false, // pointer detection does not equate to touch support - hence the touchenabled variable
-                userBrowser = msTouchDevice ? pointerEnabled ? 'IEedge' : 'IE10' : 'webkit', // browser detection to determine necessary eventlisteners
-                cancelTouch = eventListeners.cancel[userBrowser],
-                startTouch = eventListeners.start[userBrowser],
-                moveTouch = eventListeners.move[userBrowser],
-                endTouch = eventListeners.end[userBrowser],
                 startPointerId = -1, // set to -1 as the indentifier numbers on webkit start at 0
                 direction = null,
                 d = { $el: $el };
@@ -54,7 +56,7 @@
             // add touch-action and -ms-touch-action properties to element to prevent default swipe action on MS touch devices
             $el.css({ '-ms-touch-action': touchPropCss, 'touch-action': touchPropCss })
                 .on(startTouch, slideStart).on(cancelTouch, reset); // attach start and cancel events
-            
+
 
             function reset() {
                 startX = 0; movementX = 0; startY = 0; movementY = 0; scrolling = true; startPointerId = -1; direction = null;
@@ -73,16 +75,16 @@
                     break;
                     case 'move':
                         if (msTouchDevice){
-                            toProceed = startPointerId === event.originalEvent.pointerId;    
+                            toProceed = startPointerId === event.originalEvent.pointerId;
                         } else { // targetTouches checks touches on the element - allows for user to have swipe interactions on more than one element at a time
                             toProceed = startPointerId === event.originalEvent.targetTouches[0].identifier;
                         }
                     break;
                     case 'end':
                         if (msTouchDevice){
-                            toProceed = startPointerId === event.originalEvent.pointerId;   
+                            toProceed = startPointerId === event.originalEvent.pointerId;
                         } else { // need to check the changedTouches object here, as targetTouches will return empty if only one touch was present
-                            toProceed = startPointerId === event.originalEvent.changedTouches[0].identifier;   
+                            toProceed = startPointerId === event.originalEvent.changedTouches[0].identifier;
                         }
                     break;
                 }
