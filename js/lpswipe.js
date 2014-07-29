@@ -60,11 +60,11 @@
                 scrolling = true,
                 startPointerId = -1,
                 direction = null,
-                sentData = {el: el},
+                sentData = {},
                 touchProp = { 'horizontal': 'pan-y', 'vertical': 'pan-x', 'all': 'none' },
                 touchPropCss = touchProp[options.swipeDirection],
                 bodyElem = document.documentElement;
-
+            
             el.style.msTouchAction = touchPropCss; // add touch-action and -ms-touch-action properties to element to prevent default swipe action on MS touch devices
             el.style.touchAction = touchPropCss;
 
@@ -78,7 +78,8 @@
                 startX = 0; movementX = 0; startY = 0; movementY = 0; scrolling = true; startPointerId = -1; direction = null;
                 el.removeEventListener(moveTouch, slideMove); // remove move and end event listeners
                 el.removeEventListener(endTouch, slideEnd);
-                if (touchNum === 0){ // reenable touch events on the body, only if all touch events have been removed
+                // reenable touch events on the html tag, only if all touch events have been removed and the specified element does not match html tag
+                if (touchNum === 0 && el !== bodyElem){ 
                     bodyElem.style.msTouchAction = 'auto';
                     bodyElem.style.touchAction = 'auto';
                 }
@@ -132,15 +133,16 @@
                     }
 
                     startPointerId = msTouchDevice ? touchEvent.pointerId : touchEvent.identifier; // define initial pointerId to check against to prevent multi-touch issues
-
-                    if (touchNum === 0){ // disable touch events on the body whilst interacting with the specified element(s) to prevent unusual interactions - only set on first touch
+                    
+                    // disable touch events on the body whilst interacting with the specified element(s) to prevent unusual interactions
+                    // only set on first touch, and not set if element is the html tag
+                    if (touchNum === 0 && el !== bodyElem){ 
                         bodyElem.style.msTouchAction = 'none';
                         bodyElem.style.touchAction = 'none';
                     }
                     touchNum++;
                     if (typeof options.start == "function") {
-                        sentData = {el: el};
-                        options.start(sentData);
+                        options.start();
                     }
                 }
             }
