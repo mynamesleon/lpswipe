@@ -11,6 +11,7 @@
             threshold: 20, // the distance the swipe needs to be to fire the function
             swipeDirection: 'horizontal', // the direction to enable swipes: 'vertical', 'horizontal', or 'all' (directional and notReached functions will not fire if "all" is used)
             start: function (d) { }, // fires on first touch
+            beforeEnd: function(d) { }, // fires on touch end event, before directional events are fired
             right: function (d) { }, // move finger left to right
             left: function (d) { }, // move finger right to left
             up: function (d) { }, // move finger down to up
@@ -175,7 +176,9 @@
                             'vertical': movementY > options.threshold ? 'down' : movementY < -options.threshold ? 'up' : 'notReached',
                             'all': null
                         }[options.swipeDirection];
-
+                        if (typeof options.beforeEnd == "function"){
+                            options.beforeEnd();   
+                        }
                         if (typeof options[direction] == "function"){
                             options[direction](sentData);
                         }
