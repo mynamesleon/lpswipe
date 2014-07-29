@@ -10,14 +10,15 @@
         var options = {
             threshold: 20, // the distance the swipe needs to be to fire the function
             swipeDirection: 'horizontal', // the direction to enable swipes: 'vertical', 'horizontal', or 'all' (directional and notReached functions will not fire if "all" is used)
-            start: function (d) { }, // function that fires on first touch
-            right: function (d) { }, // swipe right function (move finger left to right)
-            left: function (d) { }, // swipe left function (move finger right to left)
-            up: function (d) { }, // swipe up function (move finger down to up)
-            down: function (d) { }, // swipe down function (move finger up to down)
-            moving: function (d) { }, // function that fires during swipe movement
-            notReached: function (d) { }, // function to fire on touchend if the threshold isn't reached
-            end: function (d) { } // function that fires on touchend in all cases (best used when swipeDirection is set to 'all')
+            start: function (d) { }, // fires on first touch
+            right: function (d) { }, // move finger left to right
+            left: function (d) { }, // move finger right to left
+            up: function (d) { }, // move finger down to up
+            down: function (d) { }, // move finger up to down
+            moving: function (d) { }, // fires during swipe movement
+            notReached: function (d) { }, // fires if the threshold isn't reached
+            end: function (d) { }, // fires on touchend in all cases, but only when a directional swipe has occured (best used when swipeDirection is set to 'all')
+            reset: function (d) { } // fires when touch events are reset (e.g. if swipe direction isn't met, on touchcancel event, or when swipe ends) - will always be last event to fire 
         };
         var eventListeners = { // define the event listeners to use for each browser
             start: { 'IEedge': 'pointerdown', 'IE10': 'MSPointerDown', 'webkit': 'touchstart' },
@@ -83,6 +84,9 @@
                 if (msTouchDevice) { // remove move and end events from the html element
                     bodyElem.removeEventListener(moveTouch, slideMove);
                     bodyElem.removeEventListener(endTouch, slideEnd);
+                }
+                if (typeof options.reset == "function"){
+                    options.reset(sentData);
                 }
             }
 
@@ -175,10 +179,9 @@
                         if (typeof options[direction] == "function"){
                             options[direction](sentData);
                         }
-
-                        if (typeof options.end == "function") {
-                            options.end(sentData);
-                        }
+                    }
+                    if (typeof options.end == "function") {
+                        options.end(sentData);
                     }
                     swipeReset(); // reset main variables and unbind move and end events
                 }
