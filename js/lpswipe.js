@@ -179,7 +179,7 @@
                             'all': null
                         }[options.swipeDirection];
                         if (typeof options.beforeEnd == "function"){
-                            options.beforeEnd();   
+                            options.beforeEnd(sentData);   
                         }
                         if (typeof options[direction] == "function"){
                             options[direction](sentData);
