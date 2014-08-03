@@ -18,6 +18,7 @@ To use lpswipe, simply call the lpswipe function and pass it the desired element
     });
 
 or with jQuery:
+
     $('#foo').lpswipe({
         // options
     });
@@ -38,41 +39,52 @@ Options
 -----------
 The available options and their defaults are:
 
-
 `threshold: 20,`
+
 The distance the swipe needs to be to fire the beforeEnd and directional functions
 
 `swipeDirection: 'horizontal',`
+
 The direction to enable custom swipe gestures: 'vertical', 'horizontal', or 'all' (directional, and notReached functions will not fire if "all" is used). This is needed as it will prevent the default browser behaviour when swiping in that direction on that element
 
 `start: function (d) { },`
+
 Fires on first touch
 
 `beforeEnd: function(d) { },`
+
 Fires on touch end event, before directional events are fired, only if user has started swiping in defined `swipeDirection`
 
 `right: function (d) { },`
+
 Move finger left to right - fires only if threshold is reached and 'horizontal' is specified
 
 `left: function (d) { },`
+
 Move finger right to left - fires only if threshold is reached and 'horizontal' is specified
 
 `up: function (d) { },`
+
 Move finger down to up - fires only if threshold is reached and 'vertical' is specified
 
 `down: function (d) { },`
+
 Move finger up to down - fires only if threshold is reached and 'vertical' is specified
 
 `moving: function (d) { },`
+
 Fires during swipe movement, only if user is moving in the defined `swipeDirection`
 
 `notReached: function (d) { },`
+
 Fires if the threshold isn't reached - won't fire if all is used for the swipeDirection
 
 `end: function (d) { },`
+
 Fires on touch release after directional functions. Only when user has swiped in specified direction. Will fire in all cases if 'all' is used for `swipeDirection`.
 
 `reset: function (d) { }`
+
 Fires when touch events are reset (e.g. on touchcancel event, or when touch interaction ends) - will always be last event to fire
 
 What lpswipe won't do
