@@ -16,9 +16,12 @@ The multi-touch handling in lpswipe is simple - just ignore it. When browsing th
 Usage:
 -----------
 To use lpswipe, simply call the lpswipe function and pass it the desired element(s), and an object with your defined options:
-    lpswipe(document.getElementById('foo'), {});
+
+`lpswipe(document.getElementById('foo'), {});`
+
 or with jQuery:
-    $('#foo').lpswipe({});
+
+`$('#foo').lpswipe({});`
 
 The available options and their defaults are:
 
