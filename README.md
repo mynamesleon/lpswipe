@@ -5,9 +5,9 @@ lpswipe is a small (3kb when minified) standalone javascript library built to ha
 
 It can be used as either a basic javascript function, or as a jQuery plugin (if jQuery is present on the page). All you have to do is specify the element(s), and the options, and lpswipe will handle all the cross-device events, including for windows phones, and touch-screen windows tablets and laptops.
 
-Why did I write lpswipe?
+Why lpswipe?
 -----------
-There are a lot of other touch libraries out there, and I experimented with using quite a few of them, and almost all of them have serious issues when multiple touches are used on an element. So I decided to write my own touch library that handles those issues.
+There are a lot of other touch libraries out there, and I experimented with using quite a few of them. Most don't handle touch events on windows phones or touchscreen windows tablets and laptops, and almost all of them have serious issues when multiple touches are used. I wrote lpswipe so that I had a touch library I could use which handles those issues.
 
 Multi-touch handling:
 -----------
