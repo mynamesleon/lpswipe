@@ -7,7 +7,7 @@ It can be used as either a basic javascript function, or as a jQuery plugin (if 
 
 Why lpswipe?
 -----------
-There are a lot of other touch libraries out there, and I experimented with using quite a few of them. Most don't handle touch events on windows phones or touchscreen windows tablets and laptops, and almost all of them have serious issues when multiple touches are used. I wrote lpswipe so that I had a touch library I could use which handles those issues.
+There are a lot of other touch libraries out there, and I experimented with using quite a few of them. Most don't handle touch events on windows phones or other touchscreen windows devices, and almost all of them encounter problems when multiple touches are used. I wrote lpswipe so that I had a touch library I could use which handles those issues.
 
 Usage:
 -----------
@@ -27,7 +27,7 @@ Cross-device handling:
 -----------
 Android and iOS handle touch interactions with the `touchstart`, `touchmove` and `touchend` events - the same events most other touch libraries exclusively rely on. Windows devices however use pointerevents, which include handling for mouse, pen, and touch inputs.
 
-lpswipe detects support for both types of events, will work for touch interactions on all the latest mobile devices, including windows phones and touch screen windows devices.
+lpswipe detects support for both types of events, so will work for touch interactions on all the latest mobile devices, including windows phones and touch screen windows devices.
 
 Multi-touch handling:
 -----------

@@ -8,7 +8,7 @@
     window.lpswipe = function (element, args) {
 
         var options = {
-            threshold: 20, // the distance the swipe needs to be to fire the function
+            threshold: 20, // the distance the swipe needs to be to fire the directional functions
             swipeDirection: 'horizontal', // the direction to enable swipes: 'vertical', 'horizontal', or 'all' (directional and notReached functions will not fire if "all" is used)
             start: function (d) { }, // fires on first touch
             beforeEnd: function(d) { }, // fires on touch end event, before directional events are fired
@@ -19,7 +19,7 @@
             moving: function (d) { }, // fires during swipe movement
             notReached: function (d) { }, // fires if the threshold isn't reached
             end: function (d) { }, // fires on touchend in all cases, but only when a directional swipe has occured (best used when swipeDirection is set to 'all')
-            reset: function (d) { } // fires when touch events are reset (e.g. if swipe direction isn't met, on touchcancel event, or when swipe ends) - will always be last event to fire 
+            reset: function (d) { } // fires when touch events are reset (e.g. on touchcancel event, or when swipe ends) - will always be last event to fire
         };
         var eventListeners = { // define the event listeners to use for each browser
             start: { 'IEedge': 'pointerdown', 'IE10': 'MSPointerDown', 'webkit': 'touchstart' },
@@ -64,7 +64,7 @@
                 touchProp = { 'horizontal': 'pan-y', 'vertical': 'pan-x', 'all': 'none' },
                 touchPropCss = touchProp[options.swipeDirection],
                 bodyElem = document.documentElement;
-            
+
             el.style.msTouchAction = touchPropCss; // add touch-action and -ms-touch-action properties to element to prevent default swipe action on MS touch devices
             el.style.touchAction = touchPropCss;
 
@@ -79,7 +79,7 @@
                 el.removeEventListener(moveTouch, slideMove); // remove move and end event listeners
                 el.removeEventListener(endTouch, slideEnd);
                 // reenable touch events on the html tag, only if all touch events have been removed and the specified element does not match html tag
-                if (touchNum === 0 && el !== bodyElem){ 
+                if (touchNum === 0 && el !== bodyElem){
                     bodyElem.style.msTouchAction = 'auto';
                     bodyElem.style.touchAction = 'auto';
                 }
@@ -133,10 +133,10 @@
                     }
 
                     startPointerId = msTouchDevice ? touchEvent.pointerId : touchEvent.identifier; // define initial pointerId to check against to prevent multi-touch issues
-                    
+
                     // disable touch events on the body whilst interacting with the specified element(s) to prevent unusual interactions
                     // only set on first touch, and not set if element is the html tag
-                    if (touchNum === 0 && el !== bodyElem){ 
+                    if (touchNum === 0 && el !== bodyElem){
                         bodyElem.style.msTouchAction = 'none';
                         bodyElem.style.touchAction = 'none';
                     }
@@ -179,7 +179,7 @@
                             'all': null
                         }[options.swipeDirection];
                         if (typeof options.beforeEnd == "function"){
-                            options.beforeEnd(sentData);   
+                            options.beforeEnd(sentData);
                         }
                         if (typeof options[direction] == "function"){
                             options[direction](sentData);
