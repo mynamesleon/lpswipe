@@ -142,6 +142,9 @@
                         siteNav.closeNav(); // reset to closed nav position
                     }
                 },
+                end: function(d){
+                    console.log(d);
+                },
                 reset: function(){
                     siteNav.addClass(siteNav.mobHeader, 'transition'); // add classes here to reenable animations if user hasn't used custom swipe action
                     siteNav.addClass(siteNav.mainNav, 'transition');
@@ -233,7 +236,7 @@
 
     };
 
-    if (lpswipe !== undefined){
+    if (window.lpswipe){
         lpswipe.sidenav = siteNav;
         lpswipe.sidenav.init();
     }
