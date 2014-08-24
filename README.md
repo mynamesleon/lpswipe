@@ -76,7 +76,7 @@ The available options and their defaults are:
     // fires when touch events are reset (e.g. on touchcancel event, or when touch interaction ends) - will always be last event to fire
     reset: function (d) { }
 
-Each callback (other than the `start` function) exposes an object containing the x (posX) and y (posY) positions of the current touch event, in relation to the starting touch (which is treated as 0 0).
+Each callback (other than the `start` function) exposes an object containing the x and y positions of the current touch event, in relation to the starting touch (which is treated as 0 0).
 
 What lpswipe won't do
 -----------

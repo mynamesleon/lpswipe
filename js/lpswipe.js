@@ -22,7 +22,8 @@
         startTouch = eventListeners.start[userBrowser],
         moveTouch = eventListeners.move[userBrowser],
         endTouch = eventListeners.end[userBrowser],
-        touchNum = 0; // used for multi-touch handling - increases for each touch registered on a custom touch element
+        touchNum = 0, // used for multi-touch handling - increases for each touch registered on a custom touch element
+        abs = Math.abs;
 
     window.lpswipe = function (element, args) {
 
@@ -36,17 +37,19 @@
 
             // callbacks that fire in all cases
             start: function (d) { }, // fires on first touch
-            reset: function (d) { }, // fires when touch is removed or cancelled by the browser - will always be last event to fire
+            reset: function (d) { }, // fires when touch is removed or cancelled by the browser - will always be last callback to fire
 
             // callbacks that fire only when some swipe movement has occurred
+            moving: function (d) { }, // fires during swipe movement
             beforeEnd: function(d) { }, // fires in all cases, before any other end callbacks
+            end: function (d) { }, // fires on touchend in all cases after all other callbacks (except reset)
+            
+            // threshold dependent callbacks
             right: function (d) { }, // move finger left to right
             left: function (d) { }, // move finger right to left
             up: function (d) { }, // move finger down to up
             down: function (d) { }, // move finger up to down
-            moving: function (d) { }, // fires during swipe movement
-            notReached: function (d) { }, // fires if the threshold isn't reached
-            end: function (d) { } // fires on touchend in all cases after all other callbacks (except reset)
+            notReached: function (d) { } // fires if the threshold isn't reached
         };
 
         for (var n in args) { // swap out default options if a user defined argument has been passed in
@@ -54,6 +57,8 @@
                 options[n] = args[n];
             }
         }
+        
+        var defaultScrollingVal = options.swipeDirection === 'all' ? false : true;
 
         if (element.length === undefined) { // handling for if multiple elements are passed through (i.e., an array of elements, or a jQuery object)
             lpswipeInit(element);
@@ -69,7 +74,6 @@
                 movementX = 0,
                 startY = 0,
                 movementY = 0,
-                defaultScrollingVal = options.swipeDirection === 'all' ? false : true,
                 scrolling = defaultScrollingVal,
                 startPointerId = -1,
                 direction = null,
@@ -79,32 +83,33 @@
                 htmlTag = document.documentElement,
                 elIsHtmlTag = el === htmlTag;
 
-            // only make the element available in the callbacks if it is not the html tag
-            if (!elIsHtmlTag){
-                sentData.el = el;
-            }
-
             // add touch-action and -ms-touch-action properties to element to prevent default swipe action on MS touch devices
             el.style.msTouchAction = touchPropCss;
             el.style.touchAction = touchPropCss;
 
             // check for addEventListener support to prevent errors (and any of these functions attaching to the element) in old IE
             if (el.addEventListener) {
-                el.addEventListener(startTouch, slideStart);
-                el.addEventListener(cancelTouch, swipeReset); // reset main variables and remove event listeners if the touch is cancelled
+                el.addEventListener(startTouch, start);
+                el.addEventListener(cancelTouch, reset); // reset main variables and remove event listeners if the touch is cancelled
             }
 
             // reset main variables and remove event listeners
-            function swipeReset() {
+            function reset() {
                 // reduce touch num so we can see if user is still interacting with any elements with custom touch gestures defined
                 touchNum--;
 
                 // reset the relevant variables
-                startX = 0; movementX = 0; startY = 0; movementY = 0; scrolling = defaultScrollingVal; startPointerId = -1; direction = null;
+                startX = 0; 
+                movementX = 0; 
+                startY = 0; 
+                movementY = 0; 
+                scrolling = defaultScrollingVal; 
+                startPointerId = -1; 
+                direction = null;
 
                 // remove move and end event listeners on the element
-                el.removeEventListener(moveTouch, slideMove);
-                el.removeEventListener(endTouch, slideEnd);
+                el.removeEventListener(moveTouch, move);
+                el.removeEventListener(endTouch, end);
 
                 // actions to do, only if the current element is not the html tag
                 if (!elIsHtmlTag){
@@ -115,14 +120,23 @@
                     }
                     // remove move and end events from the html element
                     if (msTouchDevice){
-                        htmlTag.removeEventListener(moveTouch, slideMove);
-                        htmlTag.removeEventListener(endTouch, slideEnd);
+                        htmlTag.removeEventListener(moveTouch, move);
+                        htmlTag.removeEventListener(endTouch, end);
                     }
                 }
 
                 if (typeof options.reset == "function"){
                     options.reset(sentData);
                 }
+            }
+            
+            // determines swipe direction on swipe end - return null if 'all' is being used for swipeDirection
+            function getDirection(){
+                return {
+                    'horizontal': movementX > options.threshold ? 'right' : movementX < -options.threshold ? 'left' : 'notReached',
+                    'vertical': movementY > options.threshold ? 'down' : movementY < -options.threshold ? 'up' : 'notReached',
+                    'all': null
+                }[options.swipeDirection];
             }
 
             // the conditionals that determine whether the touch event should be ignored or not
@@ -157,7 +171,7 @@
                 return check;
             }
 
-            function slideStart(event) {
+            function start(event) {
                 if (toProceed(event, 'start')) {
                     // use targetTouches on webkit to detect touches on the current element
                     var touchEvent = msTouchDevice ? event : event.targetTouches[0];
@@ -165,16 +179,16 @@
                     startY = touchEvent.clientY;
 
                     // bind move and end eventlisteners
-                    el.addEventListener(moveTouch, slideMove);
-                    el.addEventListener(endTouch, slideEnd);
+                    el.addEventListener(moveTouch, move);
+                    el.addEventListener(endTouch, end);
 
                     // define initial pointerId to check against to prevent multi-touch issues
                     startPointerId = msTouchDevice ? touchEvent.pointerId : touchEvent.identifier;
 
                     // bind move and end events for MSTouch to the html element as well, to support movement if touch leaves element area
-                    if (msTouchDevice) {
-                        htmlTag.addEventListener(moveTouch, slideMove);
-                        htmlTag.addEventListener(endTouch, slideEnd);
+                    if (msTouchDevice && !elIsHtmlTag) {
+                        htmlTag.addEventListener(moveTouch, move);
+                        htmlTag.addEventListener(endTouch, end);
                     }
 
                     // disable touch events on the body whilst interacting with the specified element(s) to prevent unusual interactions
@@ -186,12 +200,12 @@
                     touchNum++;
 
                     if (typeof options.start == "function") {
-                        options.start();
+                        options.start({el: el});
                     }
                 }
             }
 
-            function slideMove(event) {
+            function move(event) {
                 if (toProceed(event, 'move')) {
                     var touchEvent = msTouchDevice ? event : event.targetTouches[0];
                     movementX = touchEvent.clientX - startX;
@@ -202,8 +216,8 @@
                     // as it could cancel the swipe movement if user starts trying to scroll again
                     if (scrolling) {
                         var scrollCheck = {
-                            'horizontal': Math.abs(movementY) > Math.abs(movementX),
-                            'vertical': Math.abs(movementY) < Math.abs(movementX),
+                            'horizontal': abs(movementY) > abs(movementX),
+                            'vertical': abs(movementY) < abs(movementX),
                             'all': false
                         };
                         scrolling = scrollCheck[options.swipeDirection];
@@ -213,25 +227,20 @@
                         // prevent browser default behaviour if swiping in defined "swipeDirection"
                         event.preventDefault();
                         if (typeof options.moving == "function") {
-                            sentData.posX = movementX; sentData.posY = movementY;
+                            sentData.x = movementX; sentData.y = movementY;
                             options.moving(sentData);
                         }
                     } else {
-                        // if user is scrolling normally, fire swipeReset to remove the slide move and end events
-                        swipeReset();
+                        // if user is scrolling normally, fire reset to remove the slide move and end events
+                        reset();
                     }
                 }
             }
 
-            function slideEnd(event) {
+            function end(event) {
                 if (toProceed(event, 'end')) {
                     if (!scrolling){
-                        // determine the direction of the swipe - return null if 'all' is being used for swipeDirection
-                        direction = {
-                            'horizontal': movementX > options.threshold ? 'right' : movementX < -options.threshold ? 'left' : 'notReached',
-                            'vertical': movementY > options.threshold ? 'down' : movementY < -options.threshold ? 'up' : 'notReached',
-                            'all': null
-                        }[options.swipeDirection];
+                        direction = getDirection();
                         if (typeof options.beforeEnd == "function"){
                             options.beforeEnd(sentData);
                         }
@@ -246,7 +255,7 @@
                             options.end(sentData);
                         }
                     }
-                    swipeReset(); // reset main variables and unbind move and end events
+                    reset(); // reset main variables and unbind move and end events
                 }
             }
         }

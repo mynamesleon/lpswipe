@@ -57,12 +57,12 @@
 
         navMovementPrep: function(d){
             var navState = siteNav.body.className.indexOf('open-nav') > -1 ? 'open' : 'closed', // if nav is open or closed
-                direction = d.posX > 0 ? 'right' : 'left', // if swipe is going to the right, or left
+                direction = d.x > 0 ? 'right' : 'left', // if swipe is going to the right, or left
             movementObj = {
                 'open': {
                     'right': function(){
-                        if (d.posX < siteNav.mainNavWidth){
-                            siteNav.navClosingMovement(d.posX, d.posX + siteNav.mainNavWidth);
+                        if (d.x < siteNav.mainNavWidth){
+                            siteNav.navClosingMovement(d.x, d.x + siteNav.mainNavWidth);
                         } else { // if user has swiped further to the right than the width of the nav
                             siteNav.closeNav(); // use closeNav function to ensure that nav is in correct position off screen
                         }
@@ -72,10 +72,10 @@
                 'closed': {
                     'right': siteNav.closeNav,
                     'left': function(){
-                        if (d.posX <= -siteNav.mainNavWidth){ // if at or past the navwidth, force nav to stay in final open state
+                        if (d.x <= -siteNav.mainNavWidth){ // if at or past the navwidth, force nav to stay in final open state
                             siteNav.openNav(); // use openNav function to ensure that nav is in correct position on screen
                         } else {
-                            siteNav.navOpeningMovement(d.posX, d.posX + siteNav.mainNavWidth);
+                            siteNav.navOpeningMovement(d.x, d.x + siteNav.mainNavWidth);
                         }
                     }
                 }
@@ -165,7 +165,7 @@
                 },
                 moving: function(d){
                     if (siteNav.overrideNavScroll){ // if nav is scrollable, emulate scroll movement by using touch position
-                        siteNav.mainNav.scrollTop = currentTop - d.posY;
+                        siteNav.mainNav.scrollTop = currentTop - d.y;
                     }
                 },
                 reset: function(){
