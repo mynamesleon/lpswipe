@@ -9,7 +9,7 @@ It can be used as either a standard javascript function, or as a jQuery plugin (
 
 Why lpswipe?
 -----------
-There are a lot of other touch libraries out there, and I experimented with using quite a few of them. Most don't handle touch events on windows phones or other touchscreen windows devices, and almost all of them encounter problems when multiple touches are used. I wrote lpswipe so that I had a touch library I could use which handles those issues.
+There are a lot of other touch libraries out there, and I experimented with using quite a few of them. Most don't handle touch events on windows devices, and almost all of them encounter problems when multiple touches are used. I wrote lpswipe so that I had a touch library that catered for those issues.
 
 Usage:
 -----------
@@ -73,4 +73,4 @@ In short, anything other than the touch interactions. In the interest of keeping
 Known Issue
 -----------
 Binding to the HTML tag is not advised: 
-In order to prevent any unusual behaviour, when a user is interacting with an element with custom touch events defined, lpswipe temporarily disables all default touch interactions on the rest of the page by setting the `touch-action` and `-ms-touch-action` properties on the HTML tag to none (so that a user can't for instance, swipe an element, and scroll the page at the same time). Once the user stops interacting with that element, those properties are then removed from the HTML tag. So if custom touch interactions are defined on the HTML tag, and another element, and the user attempts to interact with both of them at the same time, this may cause conflicts.
+In order to prevent any unusual behaviour, when a user is interacting with an element with custom touch events defined, lpswipe temporarily disables all default touch interactions on the rest of the page by setting the `touch-action` and `-ms-touch-action` properties on the HTML tag to none (so that a user can't for instance, swipe an element, and scroll the page at the same time). Once the user stops interacting with that element, those properties are then removed from the HTML tag. So if custom touch interactions are defined on the HTML tag, and another element, and the user attempts to interact with both of them at the same time, this may cause conflicts - admittedly a niche case, but still worth pointing out.
