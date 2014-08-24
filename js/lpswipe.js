@@ -115,8 +115,8 @@
                 if (!elIsHtmlTag){
                     // reenable touch events on the html tag only if no elements with custom gestures are being interacted with
                     if (touchNum === 0){
-                        htmlTag.style.msTouchAction = 'auto';
-                        htmlTag.style.touchAction = 'auto';
+                        htmlTag.style.msTouchAction = '';
+                        htmlTag.style.touchAction = '';
                     }
                     // remove move and end events from the html element
                     if (msTouchDevice){

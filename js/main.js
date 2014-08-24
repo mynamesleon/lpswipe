@@ -105,7 +105,7 @@
         },
 
         setNavSwipe: function(){
-            lpswipe(document.documentElement, {
+            lpswipe(document.getElementsByTagName('body'), {
                 threshold: 50,
                 swipeDirection: 'horizontal',
                 start: function(){
