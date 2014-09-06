@@ -6,7 +6,7 @@
 (function(){
 
     // define the event listeners to use for each browser - uses 'userBrowser' variable
-    // so will bind 'touchstart' event on specified element by default, unless IE version can be detected
+    // will bind 'touchstart' event on specified element by default, unless IE version can be detected
     var eventListeners = {
         start: { 'IEedge': 'pointerdown', 'IE10': 'MSPointerDown', 'webkit': 'touchstart' },
         move: { 'IEedge': 'pointermove', 'IE10': 'MSPointerMove', 'webkit': 'touchmove' },
@@ -26,6 +26,13 @@
         abs = Math.abs;
 
     window.lpswipe = function (element, args) {
+        
+        // prevent any events binding if the browser doesn't support touch to save memory
+        // On a non-touch laptop in chrome (and current chrome on OSX - v.37.0.2062.94), this var will be false if touch emulation is disabled
+        // So when debugging using touch emulation, enable touch emulation and then reload the page for browserSupportsTouch to return true
+        if (!browserSupportsTouch){
+            return;
+        }
 
         var options = {
             // distance needed (in pixels) to fire the directional functions
@@ -58,7 +65,7 @@
             }
         }
         
-        var defaultScrollingVal = options.swipeDirection === 'all' ? false : true;
+        var defaultScrollingVal = options.swipeDirection !== 'all';
 
         if (element.length === undefined) { // handling for if multiple elements are passed through (i.e., an array of elements, or a jQuery object)
             lpswipeInit(element);
@@ -82,16 +89,6 @@
                 touchPropCss = touchProp[options.swipeDirection],
                 htmlTag = document.documentElement,
                 elIsHtmlTag = el === htmlTag;
-
-            // add touch-action and -ms-touch-action properties to element to prevent default swipe action on MS touch devices
-            el.style.msTouchAction = touchPropCss;
-            el.style.touchAction = touchPropCss;
-
-            // check for addEventListener support to prevent errors (and any of these functions attaching to the element) in old IE
-            if (el.addEventListener) {
-                el.addEventListener(startTouch, start);
-                el.addEventListener(cancelTouch, reset); // reset main variables and remove event listeners if the touch is cancelled
-            }
 
             // reset main variables and remove event listeners
             function reset() {
@@ -258,11 +255,21 @@
                     reset(); // reset main variables and unbind move and end events
                 }
             }
+            
+            // add touch-action and -ms-touch-action properties to element to prevent default swipe action on MS touch devices
+            el.style.msTouchAction = touchPropCss;
+            el.style.touchAction = touchPropCss;
+
+            // check for addEventListener support to prevent errors (and any of these functions attaching to the element) in old IE
+            if (el.addEventListener) {
+                el.addEventListener(startTouch, start);
+                el.addEventListener(cancelTouch, reset); // reset main variables and remove event listeners if the browser cancels the touch
+            }
         }
     }
     if (window.jQuery){ // allows the script to be used as a jQuery plugin if jQuery is present
         jQuery.fn.lpswipe = function(args){
-            lpswipe(jQuery(this), args);
+            lpswipe(this, args);
         }
     }
 })();

@@ -18,11 +18,11 @@
             siteNav.checkCSSProp();
             siteNav.domEvents();
             siteNav.setNavSwipe();
-            siteNav.setNavScroll();
             siteNav.resizeEvent();
         },
 
         storeVars: function(){
+            siteNav.html = document.documentElement;
             siteNav.body = document.getElementsByTagName('body')[0];
             siteNav.mainNav = document.getElementById('main-nav');
             siteNav.mobHeader = document.getElementById('mob-header');
@@ -56,9 +56,9 @@
         },
 
         navMovementPrep: function(d){
-            var navState = siteNav.body.className.indexOf('open-nav') > -1 ? 'open' : 'closed', // if nav is open or closed
+            var navState = siteNav.hasClass(siteNav.html, 'open-nav') ? 'open' : 'closed', // if nav is open or closed
                 direction = d.x > 0 ? 'right' : 'left', // if swipe is going to the right, or left
-            movementObj = {
+            movementDir = {
                 'open': {
                     'right': function(){
                         if (d.x < siteNav.mainNavWidth){
@@ -94,14 +94,17 @@
         },
 
         removeClass: function(elem, classToRemove){
-            elem.className = elem.className.replace(classToRemove, '').replace(/^\s+|\s+$/gm,'');;
+            elem.className = elem.className.replace(classToRemove, '').replace(/^\s+|\s+$/gm,'');
         },
 
         addClass: function(elem, classToAdd){
-            var elemClass = elem.className;
-            if (elemClass.indexOf(classToAdd) === -1){
+            if (!siteNav.hasClass(elem, classToAdd)){
                 elem.className = elem.className + ' ' + classToAdd;
             }
+        },
+        
+        hasClass: function(elem, classToCheck){
+            return elem.className.indexOf(classToCheck) > -1;
         },
 
         setNavSwipe: function(){
@@ -112,6 +115,7 @@
                     siteNav.mainNavWidth = siteNav.mainNav.offsetWidth; // reset when opening/closing nav to ensure width is detected correctly
                     siteNav.removeClass(siteNav.mobHeader, 'transition');
                     siteNav.removeClass(siteNav.mainNav, 'transition');
+                    siteNav.addClass(siteNav.html, 'nav-prep');
                 },
                 beforeEnd: function(){
                     cancelAnimFrame(animRequestId);
@@ -119,14 +123,14 @@
                     siteNav.addClass(siteNav.mainNav, 'transition');
                 },
                 left: function(){
-                    if (siteNav.body.className.indexOf('open-nav') === -1){
-                        siteNav.addClass(siteNav.body, 'open-nav');
+                    if (!siteNav.hasClass(siteNav.html, 'open-nav')){
+                        siteNav.addClass(siteNav.html, 'open-nav');
                         siteNav.openNav();
                     }
                 },
                 right: function(){
-                    if (siteNav.body.className.indexOf('open-nav') > -1){
-                        siteNav.removeClass(siteNav.body, 'open-nav');
+                    if (siteNav.hasClass(siteNav.html, 'open-nav')){
+                        siteNav.removeClass(siteNav.html, 'open-nav');
                         siteNav.closeNav();
                     }
                 },
@@ -136,61 +140,31 @@
                     });
                 },
                 notReached: function(){
-                    if (siteNav.body.className.indexOf('open-nav') > -1){
+                    if (siteNav.hasClass(siteNav.html, 'open-nav')){
                         siteNav.openNav(); // reset to open nav position
                     } else {
                         siteNav.closeNav(); // reset to closed nav position
                     }
                 },
-                end: function(d){
-                    console.log(d);
-                },
                 reset: function(){
                     siteNav.addClass(siteNav.mobHeader, 'transition'); // add classes here to reenable animations if user hasn't used custom swipe action
                     siteNav.addClass(siteNav.mainNav, 'transition');
-                }
-            });
-        },
-
-        setNavScroll: function(){ // use swipe library to override all touch movement in the sidenav
-            var currentTop;
-            lpswipe(siteNav.mainNav, {
-                threshold: 0,
-                swipeDirection: 'vertical',
-                start: function(){
-                    if (siteNav.mainNav.scrollHeight > siteNav.mainNav.offsetHeight){ // detect if the nav is scrollable
-                        siteNav.overrideNavScroll = true;
-                        currentTop = siteNav.mainNav.scrollTop;
-                    }
-                },
-                moving: function(d){
-                    if (siteNav.overrideNavScroll){ // if nav is scrollable, emulate scroll movement by using touch position
-                        siteNav.mainNav.scrollTop = currentTop - d.y;
-                    }
-                },
-                reset: function(){
-                    siteNav.overrideNavScroll = false;
+                    siteNav.removeClass(siteNav.html, 'nav-prep');
                 }
             });
         },
 
         domEvents: function(){
-            var clickEvent = 'ontouchstart' in window ? 'touchend' : 'click';
+            var clickEvent = /iphone|ipad|ipod/i.test(navigator.userAgent.toLowerCase()) ? 'touchend' : 'click';
             if (window.addEventListener){
                 siteNav.mobOpener.addEventListener(clickEvent, function(){
                     siteNav.mainNavWidth = siteNav.mainNav.offsetWidth; // reset when opening/closing nav to ensure width is detected correctly
-                    if (siteNav.body.className.indexOf('open-nav') > -1){
-                        siteNav.removeClass(siteNav.body, 'open-nav');
+                    if (siteNav.hasClass(siteNav.html, 'open-nav')){
+                        siteNav.removeClass(siteNav.html, 'open-nav');
                         siteNav.closeNav();
                     } else {
-                        siteNav.addClass(siteNav.body, 'open-nav');
+                        siteNav.addClass(siteNav.html, 'open-nav');
                         siteNav.openNav();
-                    }
-                });
-
-                document.getElementById('container').addEventListener('touchmove', function(e){ // prevent scrolling on the body on webkit mobile devices when nav is open
-                    if (siteNav.body.className.indexOf('open-nav') > -1){
-                        e.preventDefault();
                     }
                 });
             }
@@ -211,17 +185,17 @@
                 }
                 resizeTimer = setTimeout(function(){
                     if (isMobile){
-                        winWidth = window.innerWidth || document.documentElement.offsetWidth,
-                        winHeight = window.innerHeight || document.documentElement.offsetHeight,
-                        newOrientation = winWidth > winHeight ? 'landscape' : 'portrait',
-                        orientationchanged = newOrientation === oldOrientation ? false : true;
+                        winWidth = window.innerWidth || document.documentElement.offsetWidth;
+                        winHeight = window.innerHeight || document.documentElement.offsetHeight;
+                        newOrientation = winWidth > winHeight ? 'landscape' : 'portrait';
+                        orientationchanged = newOrientation !== oldOrientation;
+                        oldOrientation = newOrientation;
                     }
 
                     if (orientationchanged){
-                        oldOrientation = newOrientation;
                         siteNav.overrideNavScroll = false;
                         siteNav.mainNavWidth = siteNav.mainNav.offsetWidth; // reset when resizing in case any styling affects the width
-                        siteNav.removeClass(siteNav.body, 'open-nav'); // close nav when resizing
+                        siteNav.removeClass(siteNav.html, 'open-nav'); // close nav when resizing
                         siteNav.closeNav();
                     }
                 }, 100);
