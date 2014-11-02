@@ -52,7 +52,7 @@ The available options and their defaults are:
     down: function (d) { }, // move finger up to down
     notReached: function (d) { } // fires if the threshold isn't reached
 
-Each callback exposes an object containing the x and y positions of the current touch event in relation to the starting touch (which is treated as 0 0). The `start` function is the only exception, which instead returns the element being interacted with.
+Each callback exposes an object containing the x and y positions of the current touch event in relation to the starting touch (which is treated as 0 0). The `start` function is the only exception, which instead returns the element being interacted with, and the event object for the initial touch.
 
 Cross-device handling:
 -----------

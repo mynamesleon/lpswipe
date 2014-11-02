@@ -28,8 +28,7 @@
     window.lpswipe = function (element, args) {
         
         // prevent any events binding if the browser doesn't support touch to save memory
-        // On a non-touch laptop in chrome (and current chrome on OSX - v.37.0.2062.94), this var will be false if touch emulation is disabled
-        // So when debugging using touch emulation, enable touch emulation and then reload the page for browserSupportsTouch to return true
+        // this var will return true in desktop Chrome due to the ability to enable touch emulation - so the event listeners will still bind there
         if (!browserSupportsTouch){
             return;
         }
@@ -75,6 +74,12 @@
             }
         }
 
+        function fireCallback(name, data){
+            if (typeof options[name] == "function"){
+                options[name](data);
+            }
+        }
+
         function lpswipeInit(el) {
 
             var startX = 0,
@@ -83,7 +88,6 @@
                 movementY = 0,
                 scrolling = defaultScrollingVal,
                 startPointerId = -1,
-                direction = null,
                 sentData = {},
                 touchProp = { 'horizontal': 'pan-y', 'vertical': 'pan-x', 'all': 'none' },
                 touchPropCss = touchProp[options.swipeDirection],
@@ -101,8 +105,7 @@
                 startY = 0; 
                 movementY = 0; 
                 scrolling = defaultScrollingVal; 
-                startPointerId = -1; 
-                direction = null;
+                startPointerId = -1;
 
                 // remove move and end event listeners on the element
                 el.removeEventListener(moveTouch, move);
@@ -122,9 +125,7 @@
                     }
                 }
 
-                if (typeof options.reset == "function"){
-                    options.reset(sentData);
-                }
+                fireCallback('reset', sentData);
             }
             
             // determines swipe direction on swipe end - return null if 'all' is being used for swipeDirection
@@ -196,9 +197,7 @@
                     }
                     touchNum++;
 
-                    if (typeof options.start == "function") {
-                        options.start({el: el});
-                    }
+                    fireCallback('start', {el: el, event: event});
                 }
             }
 
@@ -209,24 +208,21 @@
                     movementY = touchEvent.clientY - startY;
 
                     // detect if user is trying to scroll, or is swiping in defined swipeDirection
-                    // important not to do this check if scrolling has already been disabled
-                    // as it could cancel the swipe movement if user starts trying to scroll again
+                    // wrapped in conditional as scrolling is disabled by default if "all" is used for swipeDirection
+                    // important not to do this check if scrolling has already been disabled as it could cancel the swipe movement if user starts trying to scroll again
                     if (scrolling) {
-                        var scrollCheck = {
+                        scrolling = {
                             'horizontal': abs(movementY) > abs(movementX),
                             'vertical': abs(movementY) < abs(movementX),
                             'all': false
-                        };
-                        scrolling = scrollCheck[options.swipeDirection];
+                        }[options.swipeDirection];
                     }
 
                     if (!scrolling) {
                         // prevent browser default behaviour if swiping in defined "swipeDirection"
                         event.preventDefault();
-                        if (typeof options.moving == "function") {
-                            sentData.x = movementX; sentData.y = movementY;
-                            options.moving(sentData);
-                        }
+                        sentData.x = movementX; sentData.y = movementY;
+                        fireCallback('moving', sentData);
                     } else {
                         // if user is scrolling normally, fire reset to remove the slide move and end events
                         reset();
@@ -237,20 +233,9 @@
             function end(event) {
                 if (toProceed(event, 'end')) {
                     if (!scrolling){
-                        direction = getDirection();
-                        if (typeof options.beforeEnd == "function"){
-                            options.beforeEnd(sentData);
-                        }
-
-                        // fire corresponding directional callback
-                        if (typeof options[direction] == "function"){
-                            options[direction](sentData);
-                        }
-
-                        // fire overall end callback, only if user isn't trying to scroll
-                        if (typeof options.end == "function") {
-                            options.end(sentData);
-                        }
+                        fireCallback('beforeEnd', sentData);
+                        fireCallback(getDirection(), sentData);
+                        fireCallback('end', sentData);
                     }
                     reset(); // reset main variables and unbind move and end events
                 }
