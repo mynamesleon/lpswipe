@@ -1,7 +1,6 @@
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-~~             lpswipe, sidenav javascript             ~~
+~~               taction, sidenav example              ~~
 ~~           Leon Slater, www.lpslater.co.uk           ~~
-~~                    Version 1.0.0                    ~~
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 (function(){
@@ -18,6 +17,7 @@
             siteNav.checkCSSProp();
             siteNav.domEvents();
             siteNav.setNavSwipe();
+            siteNav.setNavScroll();
             siteNav.resizeEvent();
         },
 
@@ -108,7 +108,7 @@
         },
 
         setNavSwipe: function(){
-            lpswipe(document.getElementsByTagName('body'), {
+            taction(document.getElementsByTagName('body'), {
                 threshold: 50,
                 swipeDirection: 'horizontal',
                 start: function(){
@@ -150,6 +150,28 @@
                     siteNav.addClass(siteNav.mobHeader, 'transition'); // add classes here to reenable animations if user hasn't used custom swipe action
                     siteNav.addClass(siteNav.mainNav, 'transition');
                     siteNav.removeClass(siteNav.html, 'nav-prep');
+                }
+            });
+        },
+
+        setNavScroll: function(){ // use swipe library to override all touch movement in the sidenav
+            var currentTop;
+            taction(siteNav.mainNav, {
+                threshold: 0,
+                swipeDirection: 'vertical',
+                start: function(){
+                    if (siteNav.mainNav.scrollHeight > siteNav.mainNav.offsetHeight){ // detect if the nav is scrollable
+                        siteNav.overrideNavScroll = true;
+                        currentTop = siteNav.mainNav.scrollTop;
+                    }
+                },
+                moving: function(d){
+                    if (siteNav.overrideNavScroll){ // if nav is scrollable, emulate scroll movement by using touch position
+                        siteNav.mainNav.scrollTop = currentTop - d.y;
+                    }
+                },
+                reset: function(){
+                    siteNav.overrideNavScroll = false;
                 }
             });
         },
@@ -210,8 +232,6 @@
 
     };
 
-    if (window.lpswipe){
-        lpswipe.sidenav = siteNav;
-        lpswipe.sidenav.init();
-    }
+    siteNav.init();
+
 })();

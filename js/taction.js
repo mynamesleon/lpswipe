@@ -25,7 +25,7 @@
         touchNum = 0, // used for multi-touch handling - increases for each touch registered on a custom touch element
         abs = Math.abs;
 
-    window.lpswipe = function (element, args) {
+    window.taction = function (element, args) {
         
         // prevent any events binding if the browser doesn't support touch to save memory
         // this var will return true in desktop Chrome due to the ability to enable touch emulation - so the event listeners will still bind there
@@ -67,10 +67,10 @@
         var defaultScrollingVal = options.swipeDirection !== 'all';
 
         if (element.length === undefined) { // handling for if multiple elements are passed through (i.e., an array of elements, or a jQuery object)
-            lpswipeInit(element);
+            tactionInit(element);
         } else {
             for (var i = 0; i < element.length; i++) {
-                lpswipeInit(element[i]);
+                tactionInit(element[i]);
             }
         }
 
@@ -80,7 +80,7 @@
             }
         }
 
-        function lpswipeInit(el) {
+        function tactionInit(el) {
 
             var startX = 0,
                 movementX = 0,
@@ -253,8 +253,8 @@
         }
     }
     if (window.jQuery){ // allows the script to be used as a jQuery plugin if jQuery is present
-        jQuery.fn.lpswipe = function(args){
-            lpswipe(this, args);
+        jQuery.fn.taction = function(args){
+            window.taction(this, args);
         }
     }
 })();
