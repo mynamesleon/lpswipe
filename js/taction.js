@@ -58,7 +58,8 @@
             notReached: function (d) { } // fires if the threshold isn't reached
         };
 
-        for (var n in args) { // swap out default options if a user defined argument has been passed in
+        // swap out default options if a user defined argument has been passed in
+        for (var n in args) {
             if (options.hasOwnProperty(n)) {
                 options[n] = args[n];
             }
@@ -67,7 +68,8 @@
         // set scrolling to false by default if all is used to avoid unnecessary directional check
         var defaultScrollingVal = options.swipeDirection !== 'all';
 
-        if (element.length === undefined) { // handling for if multiple elements are passed through (i.e., an array of elements, or a jQuery object)
+        // handling for if multiple elements are passed through (i.e., an array of elements, or a jQuery object)
+        if (element.length === undefined) {
             tactionInit(element);
         } else {
             for (var i = 0; i < element.length; i++) {
@@ -242,7 +244,8 @@
                         fireCallback(getDirection(), sentData);
                         fireCallback('end', sentData);
                     }
-                    reset(); // reset main variables and unbind move and end events
+                    // reset main variables and unbind move and end events
+                    reset();
                 }
             }
 
@@ -257,7 +260,9 @@
             }
         }
     }
-    if (window.jQuery){ // allows the script to be used as a jQuery plugin if jQuery is present
+
+    // allows the script to be used as a jQuery plugin if jQuery is present
+    if (window.jQuery){
         jQuery.fn.taction = function(args){
             window.taction(this, args);
         }
