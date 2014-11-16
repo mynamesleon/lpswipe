@@ -168,7 +168,7 @@
                 var cbkRsp = true;
                 if (typeof options[name] == "function"){
                     cbkRsp = options[name](data);
-                    if (name !== 'reset' && !cbkRsp){
+                    if (name !== 'reset' && cbkRsp === false){
                         reset();
                     }
                 }
