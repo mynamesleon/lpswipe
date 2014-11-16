@@ -26,9 +26,9 @@
         abs = Math.abs;
 
     window.taction = function (element, args) {
-        
+
         // prevent any events binding if the browser doesn't support touch to save memory
-        // this var will return true in desktop Chrome due to the ability to enable touch emulation - so the event listeners will still bind there
+        // this var will return true in desktop Chrome on Windows due to the ability to enable touch emulation - so the event listeners will still bind there
         if (!browserSupportsTouch){
             return;
         }
@@ -38,7 +38,7 @@
             threshold: 20,
 
             // the direction to enable custom swipe gestures: 'vertical', 'horizontal', or 'all'
-            // directional and notReached functions will not fire if "all" is used
+            // threshold dependent functions will not fire if "all" is used
             swipeDirection: 'horizontal',
 
             // callbacks that fire in all cases
@@ -49,7 +49,7 @@
             moving: function (d) { }, // fires during swipe movement
             beforeEnd: function(d) { }, // fires in all cases, before any other end callbacks
             end: function (d) { }, // fires on touchend in all cases after all other callbacks (except reset)
-            
+
             // threshold dependent callbacks
             right: function (d) { }, // move finger left to right
             left: function (d) { }, // move finger right to left
@@ -63,7 +63,8 @@
                 options[n] = args[n];
             }
         }
-        
+
+        // set scrolling to false by default if all is used to avoid unnecessary directional check
         var defaultScrollingVal = options.swipeDirection !== 'all';
 
         if (element.length === undefined) { // handling for if multiple elements are passed through (i.e., an array of elements, or a jQuery object)
@@ -71,12 +72,6 @@
         } else {
             for (var i = 0; i < element.length; i++) {
                 tactionInit(element[i]);
-            }
-        }
-
-        function fireCallback(name, data){
-            if (typeof options[name] == "function"){
-                options[name](data);
             }
         }
 
@@ -127,7 +122,7 @@
 
                 fireCallback('reset', sentData);
             }
-            
+
             // determines swipe direction on swipe end - return null if 'all' is being used for swipeDirection
             function getDirection(){
                 return {
@@ -145,7 +140,7 @@
                     switch(touchType){
                         case 'start':
                             check = startPointerId === -1;
-                        break;
+                            break;
                         case 'move':
                             if (msTouchDevice){
                                 check = startPointerId === event.pointerId;
@@ -154,7 +149,7 @@
                                 // allows for user to have swipe interactions on more than one element at a time
                                 check = startPointerId === event.targetTouches[0].identifier;
                             }
-                        break;
+                            break;
                         case 'end':
                             if (msTouchDevice){
                                 check = startPointerId === event.pointerId;
@@ -163,10 +158,20 @@
                                 // targetTouches will return empty if only one touch was present
                                 check = startPointerId === event.changedTouches[0].identifier
                             }
-                        break;
+                            break;
                     }
                 }
                 return check;
+            }
+
+            function fireCallback(name, data){
+                var cbkRsp = true;
+                if (typeof options[name] == "function"){
+                    cbkRsp = options[name](data);
+                    if (name !== 'reset' && !cbkRsp){
+                        reset();
+                    }
+                }
             }
 
             function start(event) {
@@ -240,7 +245,7 @@
                     reset(); // reset main variables and unbind move and end events
                 }
             }
-            
+
             // add touch-action and -ms-touch-action properties to element to prevent default swipe action on MS touch devices
             el.style.msTouchAction = touchPropCss;
             el.style.touchAction = touchPropCss;

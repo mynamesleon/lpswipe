@@ -54,6 +54,9 @@ The available options and their defaults are:
 
 Each callback exposes an object containing the x and y positions of the current touch event in relation to the starting touch (which is treated as 0 0). The `start` function is the only exception, which instead returns the element being interacted with, and the event object for the initial touch.
 
+####Overiding taction
+For whatever reason, you may want to prevent taction from working its magic. In any callback, you can force the touch events on that element to reset. This will unbind the movement and end events, allowing normal scroll behaviour again. It will also bypass all other callbacks that would normally fire, automatically firing the reset callback instead. This can be done simply by including a `return false;` statement in any given callback.
+
 Cross-device handling:
 -----------
 Android and iOS handle touch interactions with the `touchstart`, `touchmove` and `touchend` events - the same events most other touch libraries exclusively rely on. Windows devices however use the `pointerdown`, `pointermove` and `pointerup` events (which include handling for mouse, pen, and touch inputs). And for anyone still clinging to IE10, they use the `MSPointerDown`, `MSPointerMove` and `MSPointerUp` events instead.
