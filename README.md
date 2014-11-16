@@ -55,7 +55,7 @@ The available options and their defaults are:
 Each callback exposes an object containing the x and y positions of the current touch event in relation to the starting touch (which is treated as 0 0). The `start` function is the only exception, which instead returns the element being interacted with, and the event object for the initial touch.
 
 ####Overriding taction
-For whatever reason, you may want to prevent taction from working its magic. In any callback, you can temporarily force the touch events on that element to reset. This will unbind the movement and end events for the current touch interaction, thus allowing the default browser behaviour again. It will also bypass all other callbacks that would normally fire, automatically firing the reset callback instead. This can be done simply by including a `return false;` statement in any given callback. 
+For whatever reason, you may want to prevent taction from working its magic. In any callback, you can temporarily force the touch events on that element to reset. This will unbind the movement and end events for the current touch interaction, thus allowing the default browser behaviour again. It will also bypass all other callbacks that would normally fire, automatically firing the `reset` callback instead. This can be done simply by including a `return false;` statement in any given callback. 
 
 Any override will apply only to the current touch event. It does not permanently unbind the events.
 
