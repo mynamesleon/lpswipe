@@ -33,7 +33,7 @@ The available options and their defaults are:
     threshold: 20,
 
     // the direction to enable custom swipe gestures: 'vertical', 'horizontal', or 'all'
-    // directional and notReached functions will not fire if "all" is used
+    // threshold dependent functions will not fire if "all" is used
     swipeDirection: 'horizontal',
 
     // callbacks that fire in all cases
@@ -55,9 +55,20 @@ The available options and their defaults are:
 Each callback exposes an object containing the x and y positions of the current touch event in relation to the starting touch (which is treated as 0 0). The `start` function is the only exception, which instead returns the element being interacted with, and the event object for the initial touch.
 
 ####Overriding taction
-For whatever reason, you may want to prevent taction from working its magic. In any callback, you can temporarily force the touch events on that element to reset. This will unbind the movement and end events for the current touch interaction, thus allowing the default browser behaviour again. It will also bypass all other callbacks that would normally fire, automatically firing the `reset` callback instead. This can be done simply by including a `return false;` statement in any given callback. 
+For whatever reason, you may want to prevent taction from working its magic. In any callback, you can temporarily force the touch events on that element to reset. This will unbind the movement and end events for the current touch interaction, thus allowing the default browser behaviour again. It will also bypass all other callbacks that would normally fire, automatically firing the `reset` callback instead. This can be done simply by including a `return false;` statement in any given callback. e.g.
+
+    taction(document.getElementsByTagName('body')[0], {
+        start: function(data){
+            if (data.event.target.className.indexOf('class-string') > -1){
+                return false;
+            }
+        }
+        ...
+    });
 
 Any override will apply only to the current touch event. It does not permanently unbind the events.
+
+An example usage of this functionality might be a side navigation, whereby the user could swipe anywhere on the body of the page to reveal the navigation. In some instances (such as a horizontally scrollable container), you would need to enable the default browser behaviour again.
 
 Cross-device handling:
 -----------
