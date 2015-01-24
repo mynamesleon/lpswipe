@@ -88,5 +88,5 @@ In short, anything other than the touch interactions. In the interest of keeping
 
 Known Issue
 -----------
-Binding to the HTML tag is not advised: 
+Do not use taction on the html tag:
 In order to prevent any unusual behaviour, when a user is interacting with an element with custom touch events defined, taction temporarily disables all default touch interactions on the rest of the page by setting the `touch-action` and `-ms-touch-action` properties on the HTML tag to none (so that a user can't for instance, swipe an element, and scroll the page at the same time). Once the user stops interacting with that element, those properties are then removed from the HTML tag. So if custom touch interactions are defined on the HTML tag, and another element, and the user attempts to interact with both of them at the same time, this may cause conflicts - admittedly a niche case, but still worth pointing out.

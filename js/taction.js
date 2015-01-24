@@ -80,7 +80,6 @@
                 touchProp = { 'horizontal': 'pan-y', 'vertical': 'pan-x', 'all': 'none' },
                 touchPropCss = touchProp[options.swipeDirection],
                 htmlTag = document.documentElement,
-                elIsHtmlTag = el === htmlTag,
                 resetFired = false;
 
             // reset main variables and remove event listeners
@@ -96,22 +95,19 @@
                 scrolling = defaultScrollingVal; 
                 startPointerId = -1;
 
-                // remove move and end event listeners on the element
-                el.removeEventListener(moveTouch, move);
-                el.removeEventListener(endTouch, end);
-
-                // actions to do, only if the current element is not the html tag
-                if (!elIsHtmlTag) {
-                    // reenable touch events on the html tag only if no elements with custom gestures are being interacted with
-                    if (touchNum === 0) {
-                        htmlTag.style.msTouchAction = '';
-                        htmlTag.style.touchAction = '';
-                    }
-                    // remove move and end events from the html element
-                    if (msTouchDevice) {
-                        htmlTag.removeEventListener(moveTouch, move);
-                        htmlTag.removeEventListener(endTouch, end);
-                    }
+                // remove move and end event listeners
+                if (msTouchDevice){
+                    htmlTag.removeEventListener(moveTouch, move);
+                    htmlTag.removeEventListener(endTouch, end);
+                } else {
+                    el.removeEventListener(moveTouch, move);
+                    el.removeEventListener(endTouch, end);
+                }
+                
+                // reenable touch events on the html tag only if no elements with custom gestures are being interacted with
+                if (touchNum === 0) {
+                    htmlTag.style.msTouchAction = '';
+                    htmlTag.style.touchAction = '';
                 }
 
                 fireCallback('reset', sentData);
@@ -184,22 +180,21 @@
                     startY = touchEvent.clientY;
                     resetFired = false;
 
-                    // bind move and end eventlisteners
-                    el.addEventListener(moveTouch, move);
-                    el.addEventListener(endTouch, end);
-
                     // define initial pointerId to check against to prevent multi-touch issues
                     startPointerId = msTouchDevice ? touchEvent.pointerId : touchEvent.identifier;
 
-                    // bind move and end events for MSTouch to the html element as well, to support movement if touch leaves element area
-                    if (msTouchDevice && !elIsHtmlTag) {
+                    // bind move and end events
+                    if (msTouchDevice) {
                         htmlTag.addEventListener(moveTouch, move);
                         htmlTag.addEventListener(endTouch, end);
+                    } else {
+                        el.addEventListener(moveTouch, move);
+                        el.addEventListener(endTouch, end);
                     }
 
                     // disable touch events on the body whilst interacting with the specified element(s) to prevent unusual interactions
                     // only set on first touch, and not set if element is the html tag
-                    if (touchNum === 0 && !elIsHtmlTag) {
+                    if (touchNum === 0) {
                         htmlTag.style.msTouchAction = 'none';
                         htmlTag.style.touchAction = 'none';
                     }
