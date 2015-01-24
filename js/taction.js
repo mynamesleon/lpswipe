@@ -3,7 +3,7 @@
 ~~           Leon Slater, www.lpslater.co.uk           ~~
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-(function(){
+(function () {
 
     // define the event listeners to use for each browser - uses 'userBrowser' variable
     // will bind 'touchstart' event on specified element by default, unless IE version can be detected
@@ -29,7 +29,7 @@
 
         // prevent any events binding if the browser doesn't support touch to save memory
         // this var will return true in desktop Chrome on Windows due to the ability to enable touch emulation - so the event listeners will still bind there
-        if (!browserSupportsTouch){
+        if (!browserSupportsTouch) {
             return;
         }
 
@@ -42,20 +42,20 @@
             swipeDirection: 'horizontal',
 
             // callbacks that fire in all cases
-            start: function (d) { }, // fires on first touch
-            reset: function (d) { }, // fires when touch is removed or cancelled by the browser - will always be last callback to fire
+            start: function () { }, // fires on first touch
+            reset: function () { }, // fires when touch is removed or cancelled by the browser - will always be last callback to fire
 
             // callbacks that fire only when some swipe movement has occurred
-            moving: function (d) { }, // fires during swipe movement
-            beforeEnd: function(d) { }, // fires in all cases, before any other end callbacks
-            end: function (d) { }, // fires on touchend in all cases after all other callbacks (except reset)
+            moving: function () { }, // fires during swipe movement
+            beforeEnd: function() { }, // fires in all cases, before any other end callbacks
+            end: function () { }, // fires on touchend in all cases after all other callbacks (except reset)
 
             // threshold dependent callbacks
-            right: function (d) { }, // move finger left to right
-            left: function (d) { }, // move finger right to left
-            up: function (d) { }, // move finger down to up
-            down: function (d) { }, // move finger up to down
-            notReached: function (d) { } // fires if the threshold isn't reached
+            right: function () { }, // move finger left to right
+            left: function () { }, // move finger right to left
+            up: function () { }, // move finger down to up
+            down: function () { }, // move finger up to down
+            notReached: function () { } // fires if the threshold isn't reached
         };
 
         // swap out default options if a user defined argument has been passed in
@@ -67,15 +67,6 @@
 
         // set scrolling to false by default if all is used to avoid unnecessary directional check
         var defaultScrollingVal = options.swipeDirection !== 'all';
-
-        // handling for if multiple elements are passed through (i.e., an array of elements, or a jQuery object)
-        if (element.length === undefined) {
-            tactionInit(element);
-        } else {
-            for (var i = 0; i < element.length; i++) {
-                tactionInit(element[i]);
-            }
-        }
 
         function tactionInit(el) {
 
@@ -89,7 +80,8 @@
                 touchProp = { 'horizontal': 'pan-y', 'vertical': 'pan-x', 'all': 'none' },
                 touchPropCss = touchProp[options.swipeDirection],
                 htmlTag = document.documentElement,
-                elIsHtmlTag = el === htmlTag;
+                elIsHtmlTag = el === htmlTag,
+                resetFired = false;
 
             // reset main variables and remove event listeners
             function reset() {
@@ -109,24 +101,25 @@
                 el.removeEventListener(endTouch, end);
 
                 // actions to do, only if the current element is not the html tag
-                if (!elIsHtmlTag){
+                if (!elIsHtmlTag) {
                     // reenable touch events on the html tag only if no elements with custom gestures are being interacted with
-                    if (touchNum === 0){
+                    if (touchNum === 0) {
                         htmlTag.style.msTouchAction = '';
                         htmlTag.style.touchAction = '';
                     }
                     // remove move and end events from the html element
-                    if (msTouchDevice){
+                    if (msTouchDevice) {
                         htmlTag.removeEventListener(moveTouch, move);
                         htmlTag.removeEventListener(endTouch, end);
                     }
                 }
 
                 fireCallback('reset', sentData);
+                resetFired = true;
             }
 
             // determines swipe direction on swipe end - return null if 'all' is being used for swipeDirection
-            function getDirection(){
+            function getDirection() {
                 return {
                     'horizontal': movementX > options.threshold ? 'right' : movementX < -options.threshold ? 'left' : 'notReached',
                     'vertical': movementY > options.threshold ? 'down' : movementY < -options.threshold ? 'up' : 'notReached',
@@ -135,42 +128,49 @@
             }
 
             // the conditionals that determine whether the touch event should be ignored or not
-            function toProceed(event, touchType){
+            function toProceed(event, touchType) {
                 // in IE, make sure the event type is touch (insted of pen or mouse)
                 var check = msTouchDevice ? event.pointerType === 'touch' || event.pointerType === 2 : true;
-                if (check){
-                    switch(touchType){
+                if (check) {
+                    switch(touchType) {
                         case 'start':
                             check = startPointerId === -1;
-                            break;
+                        break;
                         case 'move':
-                            if (msTouchDevice){
+                            if (msTouchDevice) {
                                 check = startPointerId === event.pointerId;
                             } else {
                                 // targetTouches check on webkit to check touches on the element
                                 // allows for user to have swipe interactions on more than one element at a time
                                 check = startPointerId === event.targetTouches[0].identifier;
                             }
-                            break;
+                        break;
                         case 'end':
-                            if (msTouchDevice){
+                            if (msTouchDevice) {
                                 check = startPointerId === event.pointerId;
                             } else {
                                 // need to check the changedTouches object on webkit here
                                 // targetTouches will return empty if only one touch was present
                                 check = startPointerId === event.changedTouches[0].identifier
                             }
-                            break;
+                        break;
                     }
                 }
                 return check;
             }
 
-            function fireCallback(name, data){
+            function fireCallback(name, data) {
                 var cbkRsp = true;
-                if (typeof options[name] == "function"){
-                    cbkRsp = options[name](data);
-                    if (name !== 'reset' && cbkRsp === false){
+                if (typeof options[name] == "function") {
+                    // used to prevent other callbacks from firing after a forced reset - is set to false in the start function
+                    if (resetFired) { 
+                        return;
+                    }
+                    
+                    cbkRsp = options[name](sentData); 
+                    
+                    // if callback includes a return false, fire reset immediately to remove move and end events
+                    if (cbkRsp === false) {
                         reset();
                     }
                 }
@@ -182,6 +182,7 @@
                     var touchEvent = msTouchDevice ? event : event.targetTouches[0];
                     startX = touchEvent.clientX;
                     startY = touchEvent.clientY;
+                    resetFired = false;
 
                     // bind move and end eventlisteners
                     el.addEventListener(moveTouch, move);
@@ -198,7 +199,7 @@
 
                     // disable touch events on the body whilst interacting with the specified element(s) to prevent unusual interactions
                     // only set on first touch, and not set if element is the html tag
-                    if (touchNum === 0 && !elIsHtmlTag){
+                    if (touchNum === 0 && !elIsHtmlTag) {
                         htmlTag.style.msTouchAction = 'none';
                         htmlTag.style.touchAction = 'none';
                     }
@@ -239,7 +240,7 @@
 
             function end(event) {
                 if (toProceed(event, 'end')) {
-                    if (!scrolling){
+                    if (!scrolling) {
                         fireCallback('beforeEnd', sentData);
                         fireCallback(getDirection(), sentData);
                         fireCallback('end', sentData);
@@ -259,11 +260,21 @@
                 el.addEventListener(cancelTouch, reset); // reset main variables and remove event listeners if the browser cancels the touch
             }
         }
+        
+        // handling for if multiple elements are passed through (i.e., an array of elements, or a jQuery object)
+        if (element.length === undefined) {
+            tactionInit(element);
+        } else {
+            for (var i = 0; i < element.length; i++) {
+                tactionInit(element[i]);
+            }
+        }
+        
     }
 
     // allows the script to be used as a jQuery plugin if jQuery is present
-    if (window.jQuery){
-        jQuery.fn.taction = function(args){
+    if (window.jQuery) {
+        jQuery.fn.taction = function(args) {
             window.taction(this, args);
         }
     }

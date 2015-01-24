@@ -32,7 +32,7 @@
         },
 
         checkCSSProp: function(){
-             var div = document.createElement('div'),
+            var div = document.createElement('div'),
                 props = ['WebkitTransform', 'MozTransform', 'OTransform', 'msTransform', 'transform'];
             for (var i in props) { // cycle through css Perspective properties to see if the browser supports them
                 if (div.style[props[i]] !== undefined) {
@@ -112,6 +112,10 @@
                 threshold: 50,
                 swipeDirection: 'horizontal',
                 start: function(){
+                    if (siteNav.winWidth > 1400){
+                        return false;
+                    }
+                    
                     siteNav.mainNavWidth = siteNav.mainNav.offsetWidth; // reset when opening/closing nav to ensure width is detected correctly
                     siteNav.removeClass(siteNav.mobHeader, 'transition');
                     siteNav.removeClass(siteNav.mainNav, 'transition');
@@ -189,16 +193,23 @@
                         siteNav.openNav();
                     }
                 });
+                
+                document.getElementById('container').addEventListener('touchmove', function(e){ // prevent scrolling on the body on webkit mobile devices when nav is open
+                    if (siteNav.hasClass(siteNav.html, 'open-nav')) {
+                        e.preventDefault();
+                    }
+                });
             }
         },
 
         resizeEvent: function(){
+            siteNav.winWidth = window.innerWidth || document.documentElement.offsetWidth;
+            siteNav.winHeight = window.innerHeight || document.documentElement.offsetHeight;
+            
             var resizeTimer,
                 orientationchanged = true,
                 newOrientation,
-                winWidth = window.innerWidth || document.documentElement.offsetWidth,
-                winHeight = window.innerHeight || document.documentElement.offsetHeight,
-                oldOrientation = winWidth > winHeight ? 'landscape' : 'portrait',
+                oldOrientation = siteNav.winWidth > siteNav.winHeight ? 'landscape' : 'portrait',
                 isMobile = /android|webos|iphone|ipad|ipod|blackberry|windows phone/i.test(navigator.userAgent.toLowerCase());
 
             function resizeFunc(){ // resize event - custom orientation change check for mobile
@@ -206,10 +217,11 @@
                     clearTimeout(resizeTimer);
                 }
                 resizeTimer = setTimeout(function(){
+                    siteNav.winWidth = window.innerWidth || document.documentElement.offsetWidth;
+                    siteNav.winHeight = window.innerHeight || document.documentElement.offsetHeight;
+                    
                     if (isMobile){
-                        winWidth = window.innerWidth || document.documentElement.offsetWidth;
-                        winHeight = window.innerHeight || document.documentElement.offsetHeight;
-                        newOrientation = winWidth > winHeight ? 'landscape' : 'portrait';
+                        newOrientation = siteNav.winWidth > siteNav.winHeight ? 'landscape' : 'portrait';
                         orientationchanged = newOrientation !== oldOrientation;
                         oldOrientation = newOrientation;
                     }
