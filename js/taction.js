@@ -1,10 +1,11 @@
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-~~                Swipe Detection Plugin               ~~
-~~           Leon Slater, www.lpslater.co.uk           ~~
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-
+/* 
+ * Swipe plugin for cross-browser touch events
+ * Leon Slater
+ * http://mynamesleon.com
+ */
+ 
 (function () {
-
+    
     // define the event listeners to use for each browser - uses 'userBrowser' variable
     // will bind 'touchstart' event on specified element by default, unless IE version can be detected
     var eventListeners = {
@@ -77,8 +78,7 @@
                 scrolling = defaultScrollingVal,
                 startPointerId = -1,
                 sentData = {},
-                touchProp = { 'horizontal': 'pan-y', 'vertical': 'pan-x', 'all': 'none' },
-                touchPropCss = touchProp[options.swipeDirection],
+                touchPropCss = { 'horizontal': 'pan-y', 'vertical': 'pan-x', 'all': 'none' }[options.swipeDirection],
                 htmlTag = document.documentElement,
                 resetFired = false;
 
@@ -147,7 +147,7 @@
                             } else {
                                 // need to check the changedTouches object on webkit here
                                 // targetTouches will return empty if only one touch was present
-                                check = startPointerId === event.changedTouches[0].identifier
+                                check = startPointerId === event.changedTouches[0].identifier;
                             }
                         break;
                     }
@@ -157,13 +157,13 @@
 
             function fireCallback(name, data) {
                 var cbkRsp = true;
-                if (typeof options[name] == "function") {
+                if (typeof options[name] === 'function') {
                     // used to prevent other callbacks from firing after a forced reset - is set to false in the start function
                     if (resetFired) { 
                         return;
                     }
                     
-                    cbkRsp = options[name](sentData); 
+                    cbkRsp = options[name](data); 
                     
                     // if callback includes a return false, fire reset immediately to remove move and end events
                     if (cbkRsp === false) {
@@ -265,12 +265,12 @@
             }
         }
         
-    }
+    };
 
     // allows the script to be used as a jQuery plugin if jQuery is present
-    if (window.jQuery) {
-        jQuery.fn.taction = function(args) {
+    if (typeof window.jQuery !== 'undefined') {
+        window.jQuery.fn.taction = function(args) {
             window.taction(this, args);
-        }
+        };
     }
-})();
+}());
