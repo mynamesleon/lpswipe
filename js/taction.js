@@ -1,11 +1,11 @@
-/* 
+/*
  * Swipe plugin for cross-browser touch events
  * Leon Slater
  * http://mynamesleon.com
  */
- 
+
 (function () {
-    
+
     // define the event listeners to use for each browser - uses 'userBrowser' variable
     // will bind 'touchstart' event on specified element by default, unless IE version can be detected
     var eventListeners = {
@@ -48,7 +48,7 @@
 
             // callbacks that fire only when some swipe movement has occurred
             moving: function () { }, // fires during swipe movement
-            beforeEnd: function() { }, // fires in all cases, before any other end callbacks
+            beforeEnd: function () { }, // fires in all cases, before any other end callbacks
             end: function () { }, // fires on touchend in all cases after all other callbacks (except reset)
 
             // threshold dependent callbacks
@@ -88,11 +88,11 @@
                 touchNum--;
 
                 // reset the relevant variables
-                startX = 0; 
-                movementX = 0; 
-                startY = 0; 
-                movementY = 0; 
-                scrolling = defaultScrollingVal; 
+                startX = 0;
+                movementX = 0;
+                startY = 0;
+                movementY = 0;
+                scrolling = defaultScrollingVal;
                 startPointerId = -1;
 
                 // remove move and end event listeners
@@ -103,7 +103,7 @@
                     el.removeEventListener(moveTouch, move);
                     el.removeEventListener(endTouch, end);
                 }
-                
+
                 // reenable touch events on the html tag only if no elements with custom gestures are being interacted with
                 if (touchNum === 0) {
                     htmlTag.style.msTouchAction = '';
@@ -159,12 +159,12 @@
                 var cbkRsp = true;
                 if (typeof options[name] === 'function') {
                     // used to prevent other callbacks from firing after a forced reset - is set to false in the start function
-                    if (resetFired) { 
+                    if (resetFired) {
                         return;
                     }
-                    
-                    cbkRsp = options[name](data); 
-                    
+
+                    cbkRsp = options[name](data);
+
                     // if callback includes a return false, fire reset immediately to remove move and end events
                     if (cbkRsp === false) {
                         reset();
@@ -255,7 +255,7 @@
                 el.addEventListener(cancelTouch, reset); // reset main variables and remove event listeners if the browser cancels the touch
             }
         }
-        
+
         // handling for if multiple elements are passed through (i.e., an array of elements, or a jQuery object)
         if (element.length === undefined) {
             tactionInit(element);
@@ -264,7 +264,7 @@
                 tactionInit(element[i]);
             }
         }
-        
+
     };
 
     // allows the script to be used as a jQuery plugin if jQuery is present
